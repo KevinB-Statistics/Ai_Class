@@ -1,0 +1,4 @@
+{
+    "python.defaultInterpreterPath": "/usr/local/Caskroom/miniconda/base/envs/ai_env/bin/python",
+    "python.terminal.activateEnvironment": true
+}
