@@ -40,7 +40,7 @@ print(f"Sum of x times y: {sum_x_times_y}")
 print(f"Sum of x squareds: {sum_x_squareds}")
 # %%
 Sxy = sum_x_times_y - (sum_x*sum_y)/n
-Sxx = sum_x_squareds - (sum_x*sum_y)/n
+Sxx = sum_x_squareds - (sum_x*sum_x)/n
 print(f"Sxy: {Sxy} Sxx:{Sxx}")
 
 # %%
@@ -88,4 +88,18 @@ plt.xlabel("alcohol")
 plt.ylabel("quality")
 plt.title("Alcohol vs Quality with best fit line")
 plt.show()
+# %%
+
+#Test and training set
+training_set, testing_set = train_test_split(wine_df, test_size = 0.1)
+#Repeat the model training process, with training/test set
+linear_regression_model_2 = LinearRegression()
+linear_regression_model_2.fit(training_set[["alcohol"]], training_set[["quality"]])
+model_m = linear_regression_model_2.coef_[0][0]
+model_b = linear_regression_model_2.intercept_[0]
+print(f"Training Set Model Regression Equation: y = {model_m}x+{model_b}")
+#Get R^2
+score = linear_regression_model_2.score(testing_set[["alcohol"]], testing_set["quality"])
+print(f"R^2, test set:{score}")
+
 # %%
