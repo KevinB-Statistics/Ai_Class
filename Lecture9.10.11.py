@@ -82,4 +82,60 @@ Basically flow chart
 
 How do we create the trees?
 We look for the best splits of the data to have efficient, useful trees
+
+Improvements on decision tree
+-pruning: uses your validation set to remove branches of the tree without killing accuracy
+-random forest (ensemble model): train a bunch of decision trees often on a subset of the data, average the answer together or use some weighting/voting system
 '''
+import pandas as pd
+from sklearn import tree
+from sklearn.model_selection import train_test_split
+import graphviz
+from sklearn.ensemble import RandomForestClassifier
+
+faults = ["Pastry","Z_Scratch","K_Scatch","Stains","Dirtiness","Bumps","Other_Faults"]
+
+def read_in_dataset(faults):
+    df = pd.read_csv("faults.csv")
+    df["fault"] = 0
+    #Create the categorical variable for each fault
+    for i in range(0, len(faults)):
+        #Indexes of faults
+        true_fault_indexes = df.loc[df[faults[i]] == 1].index.tolist()
+        df.loc[true_fault_indexes, "fault"] = i+1
+    return df
+
+df = read_in_dataset(faults)
+print(df.head())
+    
+#Create the training and test set
+drop_features = ["fault"] + faults
+features = df.drop(drop_features, axis=1)
+outcomes = df["fault"]
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(features, outcomes, test_size=0.1)
+model = tree.DecisionTreeClassifier(max_depth=5)
+#model = RandomForestClassifier()
+model.fit(training_features, training_outcomes)
+test_accuracy_score = model.score(test_features, test_outcomes)
+training_accuracy_score = model.score(training_features, training_outcomes)
+print(f"Training accuracy {training_accuracy_score}")
+print(f"Test accuracy {test_accuracy_score}")
+# #Visualize the tree
+# dot_data = tree.export_graphviz(model, out_file=None)
+# graph = graphviz.Source(dot_data)
+# graph.render("steel_tree")
+
+#Predict a random value
+test_features.reset_index(inplace=True)
+# test_outcomes.reset_index(inplace=True)
+number = 3
+random_features = pd.DataFrame([test_features.iloc[number]])
+random_features = random_features.drop(["index"], axis=1)
+random_outcome = test_outcomes.tolist()[number]
+outcome_prediction = model.predict(random_features)
+#Print
+print("Features")
+print(random_features)
+print(random_outcome)
+print(outcome_prediction[0])
+print(f"Predicted Fault: {faults[outcome_prediction[0]-1]}, Actual Fault {faults[random_outcome-1]}")
