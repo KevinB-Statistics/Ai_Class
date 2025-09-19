@@ -113,8 +113,8 @@ drop_features = ["fault"] + faults
 features = df.drop(drop_features, axis=1)
 outcomes = df["fault"]
 training_features, test_features, training_outcomes, test_outcomes = train_test_split(features, outcomes, test_size=0.1)
-model = tree.DecisionTreeClassifier(max_depth=5)
-#model = RandomForestClassifier()
+#model = tree.DecisionTreeClassifier(max_depth=5)
+model = RandomForestClassifier()
 model.fit(training_features, training_outcomes)
 test_accuracy_score = model.score(test_features, test_outcomes)
 training_accuracy_score = model.score(training_features, training_outcomes)
@@ -127,7 +127,6 @@ print(f"Test accuracy {test_accuracy_score}")
 
 #Predict a random value
 test_features.reset_index(inplace=True)
-# test_outcomes.reset_index(inplace=True)
 number = 3
 random_features = pd.DataFrame([test_features.iloc[number]])
 random_features = random_features.drop(["index"], axis=1)
@@ -139,3 +138,23 @@ print(random_features)
 print(random_outcome)
 print(outcome_prediction[0])
 print(f"Predicted Fault: {faults[outcome_prediction[0]-1]}, Actual Fault {faults[random_outcome-1]}")
+
+predicted_probabilies = model.predict_proba(random_features)
+print(f"The predicted probabilities for each class were: {predicted_probabilies}")
+
+''''
+Ensemble Models - using more than one model
+Bagging - pirates of the Caribbean
+*Train an ensemble of small models on subset of data
+*Average or voting schema to get final answer
+*Similar to random forest, although RF usually uses a subset of featrues rather than just a subset of the data
+
+Boosting-lego movie
+*Ensemble models, but subsequent models get better at predicting the examples that were initially misclassified
+*Coordination - models work off previous models, more sequential
+*Kind of like a relay with the miscalssified examples
+*Often uses a gradient of loss with regard to a prediction to determine subsequent training
+-Cons: overfit and longer computational time
+'''
+
+
