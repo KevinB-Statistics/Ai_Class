@@ -7,12 +7,12 @@ import seaborn as sns
 
 #Load in the dataset
 df = pd.read_csv("faults.csv")
-print(df.head())
+#print(df.head())
 
 # Create ONE column for all the defect outcomes
 faults = ["Pastry","Z_Scratch","K_Scatch","Stains","Dirtiness","Bumps","Other_Faults"]
 df['fault'] = 0
-print(df.columns)
+#print(df.columns)
 
 #Create a categorical variable for each fault
 #Inside of the new 'fault' column
@@ -48,7 +48,7 @@ print(f"Mean Accuracy for the Subset 1 model: {mean_accuracy}")
 Pick a different subset of features (it doesn’t have to be 100% different, but at least some features should be), and re-run the model with a 10% test set. Note the accuracy. Did this increase or decrease? Why do you think this might be?
 '''
 subset_features2 = df[['TypeOfSteel_A300', 'TypeOfSteel_A400']]
-subset_features2.head()
+#subset_features2.head()
 
 training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.1, random_state=123)
 bayes_classifier = GaussianNB()
@@ -80,20 +80,18 @@ Pick your best overall model so far. Get the predictions for all of your test da
 '''
 
 subset_features = df[["Orientation_Index","LogOfAreas","Steel_Plate_Thickness"]]
-print(subset_features.head())
+#print(subset_features.head())
 
 training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features,outcomes,test_size=0.1, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 test_predictions = bayes_classifier.predict(test_features)
-report = classification_report(test_outcomes, test_predictions)
-print(report)
 
 #Classification report
 fault_names = ["Pastry","Z_Scratch","K_Scatch","Stains","Dirtiness","Bumps","Other_Faults"]
 labels = list(range(1,8))
 test_predictions = bayes_classifier.predict(test_features)
-report = classification_report(test_outcomes, test_predictions,labels=labels, target_names=fault_names,output_dict=True)
+report = classification_report(test_outcomes, test_predictions,labels=labels, target_names=fault_names,output_dict=True, zero_division=True)
 
 report_df = pd.DataFrame(report).T
 print(report_df)
