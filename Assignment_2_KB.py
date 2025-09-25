@@ -1,108 +1,3 @@
-#Lecture 7 and 8
-'''
-Bayesian models:
-
-Dataset:
-- Steel faults. Input features = measurements. Output outcome = type of fault 
-
-Type of Machine Learning
--Supervised
-
-Data split
--Recommend Training/Test in this case
-
-Model Evaluation
--Accuracy
-
-Predict on all test set
-Don't use defects as input (Z_scratch, stains, bumps)
-
-
-
-
-Extending the Bayesian Model
-
- 
-
-You are going to extend the Bayesian model on the Steel defect dataset we coded in class to try and improve your accuracy. You will:
-
-1. Pick only a subset of our input features, rather than all of them. Re-run the model (with a 10% test set). Note the accuracy. Did this increase or decrease? Why do you think this might be?
-
-2. Pick a different subset of features (it doesn’t have to be 100% different, but at least some features should be), and re-run the model with a 10% test set. Note the accuracy. Did this increase or decrease? Why do you think this might be?
-
-3. Pick one of the models from #1 or #2 and re-run it with a 5% test set and a 20% test set. Did your accuracy increase or decrease? Why?
-
-4. Pick your best overall model so far. Get the predictions for all of your test data on the model. Figure out which type of defect it had the overall best predictions on (like Pastry, Dirtiness, etc) and report it. Why do you think this was the case (and I don’t expect you to be a steel expert, really vague answers on this one are okay)
-
- 
-
-Deliverables:
-
-1. Your code file (5 points) (But 0 for whole assignment if missing)
-
-2. A final report (about 2 pages), which describes:
-
-    Each model you ran (7 points)
-    Reports the accuracy of each model, and (5 points)
-    Answers the questions from the assignment description. (8 points)
-
- 
-
-Make sure you cite your sources! The dataset is available on the “datasets” tab.
-'''
-# %%
-
-#Visualize the correlation
-print(df.corr())
-plot = sns.heatmap(df.corr())
-plt.show()
-#plt.savefig("plot.png")
-plt.clf()
-
-#Predict a random row
-test_features .reset_index(inplace=True)
-#Input to prediction model
-number = 3
-random_features = pd.DataFrame([test_features.iloc[number]])
-random_features = random_features.drop(["index"],axis=1)
-#Actual defect of the input
-random_outcomes = test_outcomes.tolist()[number]
-outcome_prediction = bayes_classifier.predict(random_features)
-#Print it
-#print("Input to the prediction model")
-#print(random_features)
-#print("Outcome")
-#print(random_outcomes)
-#print("Prediction")
-#print(outcome_prediction[0])
-#print(f"Predicted Fault: {faults[outcome_prediction[0]-1]}, Actual Fault: {faults[random_outcomes-1]}")
-
-#More Scoring
-test_predictions = bayes_classifier.predict(test_features.drop(["index"],axis=1))
-report = classification_report(test_outcomes, test_predictions)
-#print(report)
-
-#Confusion matrix
-matrix = confusion_matrix(test_outcomes, test_predictions)
-print("Confusion Matrix")
-print(matrix)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# %%
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.naive_bayes import GaussianNB
@@ -124,34 +19,30 @@ print(df.columns)
 for i in range(0,len(faults)):
     true_fault_index = df.loc[df[faults[i]] == 1].index.tolist()
     df.loc[true_fault_index,"fault"] = i+1
-print(df['fault'])
-# %%
+
 #Create our dataset - inputs and outcomes
 drop_features = ["fault"] + faults #drops the defect outcomes
 features = df.drop(drop_features, axis=1)
 outcomes = df["fault"]
 
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(features,outcomes,test_size=0.1)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(features,outcomes,test_size=0.1,random_state = 123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 mean_accuracy = bayes_classifier.score(test_features, test_outcomes)
 print(f"Mean Accuracy fo the model: {mean_accuracy}")
 
-# %%
 ############### Question 1 ###################
 '''
 Pick only a subset of our input features, rather than all of them. Re-run the model (with a 10% test set). Note the accuracy. Did this increase or decrease? Why do you think this might be?
 '''
 subset_features = df[["Orientation_Index","LogOfAreas","Steel_Plate_Thickness"]]
-print(subset_features.head())
 
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features,outcomes,test_size=0.1)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features,outcomes,test_size=0.1, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 mean_accuracy = bayes_classifier.score(test_features, test_outcomes)
-print(f"Mean Accuracy fo the model: {mean_accuracy}")
+print(f"Mean Accuracy for the Subset 1 model: {mean_accuracy}")
 
-# %%
 ############### Question 2 ###################
 '''
 Pick a different subset of features (it doesn’t have to be 100% different, but at least some features should be), and re-run the model with a 10% test set. Note the accuracy. Did this increase or decrease? Why do you think this might be?
@@ -159,37 +50,29 @@ Pick a different subset of features (it doesn’t have to be 100% different, but
 subset_features2 = df[['TypeOfSteel_A300', 'TypeOfSteel_A400']]
 subset_features2.head()
 
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.1)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.1, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 mean_accuracy = bayes_classifier.score(test_features, test_outcomes)
-print(f"Mean Accuracy fo the model: {mean_accuracy}")
+print(f"Mean Accuracy for the Subset 2 model: {mean_accuracy}")
 
-# %%
 ############### Question 3 ###################
 '''
 Pick one of the models from #1 or #2 and re-run it with a 5% test set and a 20% test set. Did your accuracy increase or decrease? Why?
 '''
 # 5% test set
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.05)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.05, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 mean_accuracy = bayes_classifier.score(test_features, test_outcomes)
-print(f"Mean Accuracy fo the model: {mean_accuracy}")
+print(f"5% Test Set - Mean Accuracy for the Subset 2 model: {mean_accuracy}")
 
 # 20% test set
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.2)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features2,outcomes,test_size=0.2, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 mean_accuracy = bayes_classifier.score(test_features, test_outcomes)
-print(f"Mean Accuracy fo the model: {mean_accuracy}")
-
-
-# %%
-############### Question 4 ###################
-'''
-Pick your best overall model so far. Get the predictions for all of your test data on the model. Figure out which type of defect it had the overall best predictions on (like Pastry, Dirtiness, etc) and report it. Why do you think this was the case (and I don’t expect you to be a steel expert, really vague answers on this one are okay)
-'''
+print(f"20% Test Set - Mean Accuracy for the Subset 2 model: {mean_accuracy}")
 
 ############### Question 4 ###################
 '''
@@ -199,7 +82,7 @@ Pick your best overall model so far. Get the predictions for all of your test da
 subset_features = df[["Orientation_Index","LogOfAreas","Steel_Plate_Thickness"]]
 print(subset_features.head())
 
-training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features,outcomes,test_size=0.1)
+training_features, test_features, training_outcomes, test_outcomes = train_test_split(subset_features,outcomes,test_size=0.1, random_state=123)
 bayes_classifier = GaussianNB()
 bayes_classifier.fit(training_features, training_outcomes)
 test_predictions = bayes_classifier.predict(test_features)
@@ -210,17 +93,7 @@ print(report)
 fault_names = ["Pastry","Z_Scratch","K_Scatch","Stains","Dirtiness","Bumps","Other_Faults"]
 labels = list(range(1,8))
 test_predictions = bayes_classifier.predict(test_features)
-report = classification_report(test_outcomes, 
-                               test_predictions,
-                               labels=labels,
-                               target_names=fault_names,
-                               output_dict=True)
+report = classification_report(test_outcomes, test_predictions,labels=labels, target_names=fault_names,output_dict=True)
 
 report_df = pd.DataFrame(report).T
-class_rows = report_df.loc[fault_names]
-best_class = class_rows['f1-score'].idmax()
-best_f1 = class_rows['f1-score'].max()
-print(f"Best predicted defect: {best_class} | F1 = {best_f1}")
-
-cm = confusion_matrix(test_outcomes, test_predictions, labels=labels)
-# %%
+print(report_df)
