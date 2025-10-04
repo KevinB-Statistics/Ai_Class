@@ -31,6 +31,9 @@ x_train = medical_train_encoded.drop(columns=["charges"])
 x_test = medical_test_encoded.drop("ID",axis=1)
 x_test = x_test.reindex(columns=x_test.columns, fill_value = 0)
 
+scaler = StandardScaler()
+numerical_cols = ['age', 'bmi', 'children']
+x_test[numerical_cols] = scaler.fit_transform(x_test[numerical_cols])
 
 #%%
 
@@ -55,7 +58,7 @@ model = Pipeline([
     ("scale", StandardScaler()),
     ("enet", ElasticNetCV(
         l1_ratio=[0.1,0.25,0.3,0.5,0.7,0.75,0.9,0.95,1.0],
-        cv=10,
+        cv=100,
         n_jobs=-1,
         max_iter=10000,
         tol=1e-4
@@ -67,6 +70,7 @@ linear_regression_model2=TransformedTargetRegressor(
     func=np.log1p, # y -> log(1+y)
     inverse_func=np.expm1 #backtransform
 )
+
 #fit
 linear_regression_model2.fit(training_features,training_outcomes)
 
@@ -77,11 +81,33 @@ print("MAE:", mean_absolute_error(test_outcomes, y_hat2))
 
 y_pred2 = linear_regression_model2.predict(x_test)
 
-
-# %%
 submission = pd.DataFrame({
     'ID': medical_test_encoded['ID'],
-    'charges': y_pred.astype(float)})
-submission.to_csv('submission.csv', index=False)
+    'charges': y_pred2.astype(float)})
+submission.to_csv('submission2.csv', index=False)
 print("Submission file successfully created!")
 # %%
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import Ridge
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.metrics import mean_absolute_error
+
+# Set global seed
+SEED = 42
+np.random.seed(SEED)
+
+# load data again
+medical_train = pd.read_csv("ML_Class/train.csv").reset_index(drop=True)
+medical_test  = pd.read_csv("ML_Class/test.csv")
+
+# Add ID to training set because they match
+medical_train["ID"] = np.arange(1, len(medical_train) + 1)
+
+# evaluation by appending true values
+truth = medical_test.merge(
+    medical_train[["ID", "charges"]], on="ID", how="left"
+).rename(columns={"charges": "true_charges"})
