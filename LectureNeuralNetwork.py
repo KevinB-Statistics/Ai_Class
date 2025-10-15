@@ -49,6 +49,11 @@ outcomes = scaler.fit_transform(outcomes)
 #Use a 20% training set
 train_x, test_x, train_y, test_y = train_test_split(features, outcomes,
 test_size=0.2)
+
+print(train_x.shape)
+print(test_x.shape)
+print(train_y.shape)
+print(test_y.shape)
 # %%
 #-----------------------
 # Build the model
@@ -58,23 +63,26 @@ test_size=0.2)
 #-----------------------
 #First - input layer. Provide the shape of the data (not batches)
 input_layer = keras.layers.Input(shape=(train_x.shape[-1], ))
-#Layers 1 and 2 - Dense layers
-#Passing the number of nodes
 #Also passing in the activation function (default-None)
 #Can pass kernel and bias initializer
 #Kernel -default glorot normal also called Xavier
 #Sample from special normal distribution
-#Lets make two layers
+
+#Layer 1 and 2 - Dense layers
+#Pass them - number of nodes, also activation function
 layer_1 = keras.layers.Dense(30, activation="relu")
 layer_2 = keras.layers.Dense(15, activation="relu")
-#Output layer - same but with softmax activation
+
+#Output layer - same number of nodes as output but with softmax activation
 #And same number of nodes as outputs
 output_layer = keras.layers.Dense(train_y.shape[-1], activation="softmax")
+
 #Model - can pass a list of layers
 model = keras.models.Sequential([input_layer, layer_1, layer_2, output_layer])
-#Special function where we can print a summary of the model
-# - very helpful to debug
+#Function where we can print a summary of the model
+# - very helpful to debug shapes
 print(model.summary())
+
 
 #%%
 #----------------
@@ -87,10 +95,17 @@ print(model.summary())
 optimizer = keras.optimizers.Adam(learning_rate=1e-3)
 loss_function = keras.losses.CategoricalCrossentropy()
 metric_list = [keras.metrics.CategoricalAccuracy()]
-model.compile(optimizer=optimizer,
-loss=loss_function, metrics=metric_list)
+model.compile(optimizer=optimizer, 
+              loss=loss_function, 
+              metrics=metric_list)
 
-#%%
+callback_function_1 = keras.callbacks.EarlyStopping(patience=2, monitor="val_loss", restore_best_weights=True)
+callback_function_2 = keras.callbacks.ModelCheckpoint(
+    "my_models/checkpoint_models.keras",
+    monitor="val_loss",
+    mode = "min",
+    save_best_only = True
+)
 # -------------------------------------
 # Train the model -- Biggest Time Sink
 # --------------------------------------
@@ -99,26 +114,16 @@ loss=loss_function, metrics=metric_list)
 #Expecting your batch size
 #Expecting callbacks - later (and validation split later)
 #Defaults to shuffling your data
-callback_function = keras.callbacks.EarlyStopping(patience=2, monitor="val_loss",
-restore_best_weights=True)
-callback_function_2 = keras.callbacks.ModelCheckpoint(
-"my_model/checkpoint_model",
-monitor="val_loss",
-mode="min",
-save_best_only=True
-)
-epochs = 10
+
+epochs = 5
 batch_size = 16
-#history = model.fit(x=train_x, y=train_y, batch_size=batch_size, epochs=epochs)
-history = model.fit(x=train_x, y=train_y, batch_size=batch_size, epochs=epochs,
-callbacks=[callback_function, callback_function_2], validation_split=0.1)
+history = model.fit(x=train_x, y=train_y, batch_size=batch_size, epochs=epochs, callbacks=[callback_function_1,callback_function_2], validation_split=0.1)
+
 print(history.history)
-print("History available")
 print(history.history.keys())
 print("Loss")
 print(history.history["loss"])
-#print("Val Loss")
-#print(history.history["val_loss"])
+print(history.history["val_loss"])
 print("Validation Accuracy")
 print(history.history["val_categorical_accuracy"])
 
@@ -135,6 +140,8 @@ print(train_return_dict)
 test_return_dict = model.evaluate(x=test_x, y=test_y, verbose=0)
 print("Test Return: Loss, Accuracy")
 print(test_return_dict)
+
+#%%
 #-------------------------
 # Run a prediction
 #-------------------------

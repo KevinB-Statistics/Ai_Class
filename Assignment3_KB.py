@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn. metrics import confusion_matrix, f1_score
-
+import matplotlib.pyplot as plt
 #Load in the dataset
 df = pd.read_csv("fuel_end_use.csv")
 # print(df.head())
