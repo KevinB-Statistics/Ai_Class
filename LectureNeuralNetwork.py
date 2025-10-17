@@ -127,6 +127,7 @@ print(history.history["val_loss"])
 print("Validation Accuracy")
 print(history.history["val_categorical_accuracy"])
 
+
 #%%
 #------------------
 # Evaluate model
@@ -137,6 +138,8 @@ print(history.history["val_categorical_accuracy"])
 train_return_dict = model.evaluate(x=train_x, y=train_y, verbose=0)
 print("Train Return: Loss, Accuracy")
 print(train_return_dict)
+
+
 test_return_dict = model.evaluate(x=test_x, y=test_y, verbose=0)
 print("Test Return: Loss, Accuracy")
 print(test_return_dict)
@@ -145,6 +148,33 @@ print(test_return_dict)
 #-------------------------
 # Run a prediction
 #-------------------------
+predictions = model.predict(test_x)
+#print(predictions)
+#Convert back from one-hot vectors due to scikitlearn documentation for report
+pred_y = np.argmax(predictions,axis=1)
+out_y = np.argmax(test_y, axis=1)
+
+#Get confusion matrix and classification
+matrix = confusion_matrix(out_y,pred_y)
+report = classification_report(out_y,pred_y)
+class_accuracies = matrix.diagonal()/matrix.sum(axis=1)
+print(faults)
+print(class_accuracies)
+print(report)
+#model.save("my_model.h5")
+
+#%%
+
+
+
+
+
+
+
+
+
+
+
 predictions = model.predict(test_x)
 #print(predictions)
 #print(test_y)
