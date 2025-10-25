@@ -26,15 +26,12 @@ import tensorflow as tf
 tf.get_logger().setLevel('ERROR')
 #Tensorflow and keras imports
 from tensorflow import keras
-#import Input, layers, models, optimizers, losses, metrics
 #Data Wrangling imports
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import confusion_matrix, classification_report
 import numpy as np
-#Graphing
-import matplotlib.pyplot as plt
 #----------------------------
 # Load in dataset
 #----------------------------
@@ -157,7 +154,7 @@ for name, m in models:
     train_metrics = m.evaluate(train_x, train_y, verbose=0)
     test_metrics = m.evaluate(test_x, test_y,  verbose=0)
 
-    #save results
+    # results
     results.append({
         "Model": name,
         "Train_acc": train_metrics["acc"],
@@ -167,44 +164,7 @@ for name, m in models:
         "Best_val_loss": min(h.history["val_loss"]),
         "Test_loss": test_metrics["loss"]
     })
+    # save model
+    m.save(f"my_models/{name.replace(' ','_')}.keras")
 
 #%%
-# -------------------------------------
-# Train the model
-# --------------------------------------
-history = model.fit(x=train_x, 
-                    y=train_y, 
-                    batch_size=batch_size, 
-                    epochs=epochs, 
-                    callbacks=callback, 
-                    validation_split=0.1)
-
-
-train_acc_epochs = history.history['acc']
-val_acc_epochs = history.history['val_acc']
-
-train_metrics = model.evaluate(train_x, train_y, verbose=0)
-test_metrics = model.evaluate(test_x,  test_y,  verbose=0)
-
-print(f"Final Train accuracy: {train_metrics['acc']:.4f}")
-print(f"Final Test accuracy: {test_metrics['acc']:.4f}")
-print(f"Best Val accuracy: {max(val_acc_epochs):.4f}")
-print(f"Last-epoch VAL accuracy: {val_acc_epochs[-1]:.4f}")
-
-#%%
-#-------------------------
-# Run a prediction
-#-------------------------
-predictions = model.predict(test_x)
-# Convert back from one-hot vectors due to scikitlearn documentation for report
-pred_y = np.argmax(predictions,axis=1)
-out_y = np.argmax(test_y, axis=1)
-
-#Get confusion matrix and classification
-matrix = confusion_matrix(out_y,pred_y)
-report = classification_report(out_y,pred_y)
-class_accuracies = matrix.diagonal()/matrix.sum(axis=1)
-print(faults)
-print(class_accuracies)
-print(report)
-model.save("my_model.h5")
