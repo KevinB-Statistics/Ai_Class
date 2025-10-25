@@ -70,8 +70,8 @@ input_layer = keras.layers.Input(shape=(train_x.shape[-1], ))
 
 #Layer 1 and 2 - Dense layers
 #Pass them - number of nodes, also activation function
-layer_1 = keras.layers.Dense(30, activation="relu")
-layer_2 = keras.layers.Dense(15, activation="relu")
+layer_1 = keras.layers.Dense(30, activation="leaky_relu")
+layer_2 = keras.layers.Dense(15, activation="leaky_relu")
 
 #Output layer - same number of nodes as output but with softmax activation
 #And same number of nodes as outputs
@@ -124,6 +124,7 @@ print(history.history.keys())
 print("Loss")
 print(history.history["loss"])
 print(history.history["val_loss"])
+
 print("Validation Accuracy")
 print(history.history["val_categorical_accuracy"])
 
