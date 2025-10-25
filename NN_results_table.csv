@@ -1,0 +1,4 @@
+NN Model Architecture,Architecture Description,Training Accuracy,Best Validation Accuracy,Test Accuracy
+Model 1,"Base model: 2 hidden layers (30,15) using Leaky ReLU",0.7654638886451721,0.6987179517745972,0.7172236442565918
+Model 2,Added 3rd hidden layer (5 nodes) with Leaky ReLU,0.5122422575950623,0.5448718070983887,0.4987146556377411
+Model 3,"Increased number of nodes for each layer (64,32,16) with Leaky ReLU",0.656572163105011,0.6538461446762085,0.6426734924316406

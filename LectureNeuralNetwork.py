@@ -118,15 +118,15 @@ callback_function_2 = keras.callbacks.ModelCheckpoint(
 epochs = 5
 batch_size = 16
 history = model.fit(x=train_x, y=train_y, batch_size=batch_size, epochs=epochs, callbacks=[callback_function_1,callback_function_2], validation_split=0.1)
-
-print(history.history)
-print(history.history.keys())
-print("Loss")
-print(history.history["loss"])
-print(history.history["val_loss"])
+#%%
+# print(history.history)
+# print(history.history.keys())
+# print("Loss")
+# print(history.history["loss"])
+# print(history.history["val_loss"])
 
 print("Validation Accuracy")
-print(history.history["val_categorical_accuracy"])
+print(max(history.history["val_categorical_accuracy"]))
 
 
 #%%
@@ -136,7 +136,7 @@ print(history.history["val_categorical_accuracy"])
 # Can also specify return dict
 # Otherwise returns loss than metrics in order
 #------------------
-train_return_dict = model.evaluate(x=train_x, y=train_y, verbose=0)
+train_return_dict = model.evaluate(x=train_x, y=train_y, verbose=0, return_dict=True)
 print("Train Return: Loss, Accuracy")
 print(train_return_dict)
 
