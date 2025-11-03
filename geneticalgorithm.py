@@ -101,19 +101,124 @@ class Line:
             total_profit += self.candy_dict[candy_name]['profit']
         return total_profit
 
+    def print_self(self):
+        print(f"Candies: {self.candy_list}")
+        print(f"Candy Units: {self.candy_units}")
+        print(f"Line Profit: {round(self.calc_total_candy_profit(), 2)}")
+
+    def print_profit(self):
+        print(f"Line Profit: {round(self.calc_total_candy_profit(), 2)}")
+
+
     def __lt__(self,other):
         return self.calc_total_candy_profit() < other.calc_total_candy_profit()
 
+class Population:
+    def __init__(self, candy_options, candy_dict, members, top_members):
+        self.candy_options = candy_options.copy()
+        self.candy_dict = candy_dict.copy()
+        self.member_num = members
+        self.top_members_num = top_members
+        self.tournament_size = 4 #parameterize
+        self.mutation_rate = 0.2 #parameterize
+        self.members = []
+        self.top_members = []
+        # Initialize our population
+        for i in range(0, self.member_num):
+            new_line = Line(candy_options, candy_dict)
+            self.members.append(new_line)
+        self.members.sort(reverse=True)
+        # Copy best members to top members list
+        for i in range(0, self.top_members_num):
+            self.top_members.append(self.copy_member(self.members[i]))
 
+    def update_top_rules(self):
+        self.members.sort(reverse=True)
+        self.top_members = self.members[:self.top_members_num]
+    
+    def copy_member(self, og):
+        #initialize a new individual
+        new_line = Line(self.candy_options, self.candy_dict)
+        # Copy the candy list
+        new_line.candy_list = og.candy_list.copy()
+        #Copy the candy options
+        new_line.candy_options = og.candy_options.copy()
+        #Copy the candy units
+        new_line.candy_units = og.candy_units
+        return new_line
+    def mutate(self):
+        #Number of populatiom members to mutate based on rate
+        mutation_number = math.floor(self.member_num*self.mutation_rate)
+        #Sample of mutants
+        to_mutate = random.sample(self.members, mutation_number)
+        #Perform the mutation
+        for member in to_mutate:
+            member.mutate_candy()
+
+    def tournament_selection(self):
+        selection_list = random.sample(self.members, self.tournament_size)
+        selection_list.sort(reverse=True)
+        winner = selection_list[0]
+        return self.copy_member(winner)
+    
+    def new_generation(self):
+        new_generation = []
+        for i in range(0, self.member_num):
+            new_generation.append(self.tournament_selection())
+        self.members = new_generation
+        self.members.sort(reverse=True)
+
+    def run_generation(self):
+        #self.update_top_rules()
+        self.mutate()
+        self.new_generation()
+        self.update_top_rules()
+                                  
+    def print_top_members(self, num_members = None):
+        if num_members == None:
+            num_members = self.top_members_num
+        self.top_members.sort(reverse=True)
+        for i in range(0, num_members):
+            #Each member is a line with a print_self function
+            self.top_members[i].print_self()
+
+    def print_top_members_profit(self, num_members=None):
+        if num_members == None:
+            num_members = self.top_members_num
+        self.top_members.sort(reverse=True)
+        for i in range(0, num_members):
+            self.top_members[i].print_profit()
 
 demand = 796142
 df = pd.read_csv("candy-data.csv")
 candy_dict = preprocess_data(demand,df)
 # print(json.dumps(candy_dict,indent=4))
 candy_options = list(candy_dict.keys())
-candy_line = Line(candy_options, candy_dict)
-print(candy_line.return_candy_list())
-print(candy_line.calc_total_candy_profit())
-candy_line.mutate_candy()
-print(candy_line.return_candy_list())
-print(candy_line.calc_total_candy_profit())
+population_size = 100
+top_members_num = 10
+generations = 100
+population = Population(candy_options, candy_dict, population_size, top_members_num)
+
+for i in range(0, generations):
+    print(f"Generation: {i}")
+    population.print_top_members_profit(num_members=1)
+    population.run_generation()
+
+print("------ENDING----")
+population.print_top_members(num_members=2)
+#population.print_top_members_profit(num_members=2)
+#population.new_generation()
+#population.mutate()
+#population.update_top_rules()
+#population.run_generation()
+#print("------------------")
+#population.print_top_members_profit(num_members=2)
+
+# candy_line = Line(candy_options, candy_dict)
+# print(candy_line.return_candy_list())
+# candy_line.print_self()
+# candy_line.mutate_candy()
+# print(candy_line.return_candy_list())
+# print(candy_line.calc_total_candy_profit())
+# candy_line.print_self()
+# #candy_line.print_proft()
