@@ -3,6 +3,7 @@ import random
 import copy 
 import math 
 import json 
+import numpy as np
 
 def preprocess_data(demand, df):
     #Create a profit column for each candy 
@@ -110,15 +111,14 @@ class Line:
     def __lt__(self, other):
         return self.calc_total_candy_profit() < other.calc_total_candy_profit()
 
-class Population:
-    def __init__(self, candy_options, candy_dict, members, top_members):
+class BaselinePopulation:
+    def __init__(self, candy_options, candy_dict, members, top_members, mutation_rate=0.1):
         self.candy_options = candy_options.copy()
         self.candy_dict = candy_dict.copy()
         self.member_num = members 
         self.top_members_num = top_members
         self.tournament_size = 4 
-        #self.mutation_rate = 0.2 
-        self.mutation_rate = 0.1 
+        self.mutation_rate = mutation_rate 
         self.members = []
         self.top_members = [] 
         #Initialize our population 
@@ -190,39 +190,60 @@ class Population:
             #Each member is a Line with a print_self function
             self.top_members[i].print_profit()
 
+######################################
+def run_experiment_baseline(pop_size, generations, mutation_rate, seed):
+    # Set seeds
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # Create baseline population (uses the original Line-only Population class)
+    pop = BaselinePopulation(
+        candy_options=candy_options,
+        candy_dict=candy_dict,
+        members=pop_size,
+        top_members=10,
+        mutation_rate=mutation_rate
+    )
+
+    # Run GA loop
+    for g in range(generations):
+        pop.run_generation()
+
+    # Extract best line
+    best = pop.top_members[0]
+    best_profit = best.calc_total_candy_profit()
+    best_line = best.candy_list.copy()
+
+    # Return experiment record
+    return {
+        "pop_size": pop_size,
+        "generations": generations,
+        "mutation_rate": mutation_rate,
+        "seed": seed,
+        "best_profit": best_profit,
+        "best_line": best_line
+    }
 
 demand = 796142
 df = pd.read_csv("candy-data.csv")
 candy_dict = preprocess_data(demand, df)
-#print(json.dumps(candy_dict, indent=4))
+
 candy_options = list(candy_dict.keys())
-population_size = 200 
-top_members_num = 10 
-generations = 100
-population = Population(candy_options, candy_dict, population_size, top_members_num)
 
-for i in range(0, generations):
-    print(f"Generation: {i}")
-    population.print_top_members_profit(num_members=1)
-    population.run_generation()
+baseline_results = []
 
-print("-----ENDING----")
-population.print_top_members(num_members=2)
+for pop_size in [100, 200]:
+    for mutation_rate in [0.05, 0.1, 0.2]:
+        gens = 100
+        for seed in [1, 2, 3]:
+            res = run_experiment_baseline(
+                pop_size=pop_size,
+                generations=gens,
+                mutation_rate=mutation_rate,
+                seed=seed
+            )
+            baseline_results.append(res)
 
-#population.print_top_members_profit(num_members=2)
-#population.new_generation()
-#population.mutate()
-#population.update_top_rules()
-#population.run_generation()
-#print("-------------.")
-#population.print_top_members_profit(num_members=2)
-
-
-
-# candy_line = Line(candy_options, candy_dict)
-# print(candy_line.return_candy_list())
-# candy_line.print_self()
-# candy_line.mutate_candy()
-# print(candy_line.return_candy_list())
-# # candy_line.print_self()
-# #candy_line.print_profit()
+df_baseline = pd.DataFrame(baseline_results)
+print(df_baseline.to_string(index=False))
+df_baseline.to_csv("ga_baseline_results.csv", index=False)
